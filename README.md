@@ -10,7 +10,7 @@ Vue 2 app with Firebase Login, secured Firebase functions, firestore, vuex and r
 - Vuex Persisted State
 
 
-####Install
+#### Install
 
 - Add the api credentials to `src/services/firebase`
 - Enable the firebase custom plugin for auth in App.vue
