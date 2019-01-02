@@ -1,5 +1,5 @@
 import store from "../store";
-import Firebase from "firebase";
+import Firebase from "firebase/app";
 import { firebaseConfig } from "../services/firebase";
 import { getUserRole } from "../services/checkRole";
 
@@ -29,32 +29,17 @@ export default {
       },
 
       loginWithGoogle: async () => {
-        try {
 
-          const auth = await firebase.auth().signInWithPopup(provider);
+        const auth = await firebase.auth().signInWithPopup(provider)
+          .catch(e => console.log("User Auth failed", e));
+        const user = auth.user;
 
-          // console.log("🎹", auth);
-          // This gives you a Google Access Token. You can use it to access the Google API.
-          // eslint-disable-next-line
-          const token = auth.credential.accessToken;
-          // console.log("🎹", token);
-          // The signed-in user info.
-          // eslint-disable-next-line
-          const user = auth.user;
-          // console.log("🎹", user);
+        // write user
+        const userUid = user.uid;
+        firebase.database().ref("users").set({ [userUid]: { signedIn: true } })
+          .catch(e => console.log("Write user in databse Failed", e));
 
-        } catch (error) {
-          // Handle Errors here.
-          /* eslint-disable */
-          const errorCode    = error.code;
-          const errorMessage = error.message;
-          // The email of the user's account used.
-          const email        = error.email;
-          // The firebase.auth.AuthCredential type that was used.
-          const credential   = error.credential;
-          // ...
-          /* eslint-enable */
-        }
+
       },
 
       logout: async () => {
@@ -67,11 +52,9 @@ export default {
 
     // REGISTER USER TO VUEX
     auth.onAuthStateChanged(user => {
-      store.commit("updateUser", {
-        user
-      });
+      store.commit("updateUser", { user });
+      store.commit("updateUserRole", user ? getUserRole(user.email) : null);
 
-      store.commit("updateUserRole", getUserRole(user.email));
     });
   }
 };
